@@ -1,0 +1,6 @@
+replicaCount: 3
+
+image:
+  repository: 396681573948.dkr.ecr.us-east-2.amazonaws.com/evolve-rtice-assessment:latest
+
+appPort: 5000

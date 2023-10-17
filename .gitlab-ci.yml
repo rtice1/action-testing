@@ -1,0 +1,63 @@
+stages:
+  - build_and_push
+  - deploy_to_k8s
+
+variables:
+  # Define your environment variables here
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+  ECR_REPO_NAME: $ECR_REPO_NAME
+  DOCKER_IMAGE_NAME: $DOCKER_IMAGE_NAME
+  DOCKER_HOST: tcp://docker:2375
+  KUBECONFIG_PATH: $KUBECONFIG
+
+before_script:
+  - export DOCKER_CLI_AWS=0.5.0
+  - export DOCKER_CLI_AWS_DOCKER_IMAGE=docker:${DOCKER_CLI_AWS}
+
+build_and_push:
+  stage: build_and_push
+  image: 
+    name: amazon/aws-cli
+    entrypoint: [""]
+  services:
+    - docker:dind
+  before_script:
+    - amazon-linux-extras install docker
+    - aws --version
+    - docker --version
+  script:
+    - echo "Logging in to AWS ECR"
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+    - echo "Building Docker image"
+    - docker build -t $DOCKER_IMAGE_NAME .
+
+    - echo "Tagging Docker image"
+    - docker tag $DOCKER_IMAGE_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:latest
+
+    - echo "Pushing Docker image to ECR"
+    - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:latest
+  only:
+    - main
+
+yaml_deploy:
+  stage: deploy_to_k8s
+  image: alpine/k8s:1.26.8
+  script:
+    - echo "Applying Kubernetes deployment manifests"
+    - kubectl apply -f ./k8s
+  only:
+    - main 
+  when: manual 
+
+helm_deploy:
+  stage: deploy_to_k8s
+  image: alpine/k8s:1.26.8
+  script:
+    - echo "Applying Kubernetes deployment via helm"
+    - helm upgrade gitlab-helm ./.helm/deploy-chart --install
+  only:
+    - main 
+  when: manual  

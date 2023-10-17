@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-helm-app
+spec:
+  selector:
+    app: {{ .Release.Name }}-helm-app
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: {{ .Values.appPort }}  
+  type: ClusterIP  # Set the service type to ClusterIP

@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evolve-rtice-assessment-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: evolve-rtice-assessment
+  template:
+    metadata:
+      labels:
+        app: evolve-rtice-assessment
+    spec:
+      containers:
+      - name: evolve-rtice-assessment
+        image: 396681573948.dkr.ecr.us-east-2.amazonaws.com/evolve-rtice-assessment:latest

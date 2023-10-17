@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-helm-app
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-helm-app
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-helm-app
+    spec:
+      containers:
+      - name: helm-app
+        image: {{ .Values.image.repository }}

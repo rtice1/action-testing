@@ -1,0 +1,14 @@
+
+.idea
+node_modules
+.vscode
+__pycache__
+local.dev
+
+package-lock.json
+
+.terraform
+*.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+
